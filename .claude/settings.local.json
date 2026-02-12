@@ -4,7 +4,9 @@
       "mcp__neon__list_projects",
       "mcp__neon__get_database_tables",
       "mcp__neon__describe_table_schema",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(npm install:*)"
     ]
   },
   "enabledMcpjsonServers": [

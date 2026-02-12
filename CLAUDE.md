@@ -2,6 +2,13 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Documentation-First Rule
+
+**ALWAYS** read and refer to the relevant documentation file in the `/docs` directory before generating any code. The docs contain design decisions, specifications, and constraints that must be followed. If a docs file exists for the feature or area you are working on, treat it as the source of truth.
+
+Current docs:
+- `docs/ui.md` - UI design and component guidelines
+
 ## Build & Development Commands
 
 ```bash
