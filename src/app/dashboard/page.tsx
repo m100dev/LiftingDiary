@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { format } from "date-fns";
-import { Dumbbell } from "lucide-react";
+import { Dumbbell, Plus } from "lucide-react";
 
 import { WorkoutTime } from "./workout-time";
 
@@ -14,6 +14,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default async function DashboardPage({
   searchParams,
@@ -35,6 +37,13 @@ export default async function DashboardPage({
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
       <DatePicker dateStr={dateStr} />
+
+      <Button asChild className="mb-6 w-full">
+        <Link href={`/dashboard/workout/new?date=${dateStr}`}>
+          <Plus className="mr-2 size-4" />
+          Create New Workout
+        </Link>
+      </Button>
 
       {workouts.length === 0 ? (
         <Card>

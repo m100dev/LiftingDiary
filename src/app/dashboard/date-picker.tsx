@@ -55,7 +55,7 @@ export function DatePicker({ dateStr }: { dateStr: string }) {
         <PopoverTrigger asChild>
           <Button
             variant="outline"
-            className={cn("w-[200px] justify-start text-left font-normal")}
+            className={cn("w-50 justify-start text-left font-normal")}
           >
             <CalendarIcon className="mr-2 size-4" />
             {formatDate(selectedDate)}

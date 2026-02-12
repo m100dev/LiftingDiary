@@ -159,9 +159,23 @@ export function WorkoutForm() {
 }
 ```
 
+### No Redirects in Server Actions
+
+**Never** use `redirect()` from `next/navigation` inside a Server Action. All redirects MUST be handled client-side after the Server Action call resolves.
+
+- Use `router.push()` (from `useRouter`) in the Client Component after `await`ing the action
+- Server Actions are responsible for data mutations, validation, and revalidation — **not navigation**
+
 ## Prohibited Patterns
 
 ```ts
+// WRONG: Redirecting inside a Server Action
+import { redirect } from "next/navigation";
+export async function createWorkoutAction(params: { name: string }) {
+  // ...mutation logic...
+  redirect("/workouts"); // Must be handled client-side!
+}
+
 // WRONG: Route handler for mutations
 // app/api/workouts/route.ts
 export async function POST() { ... }

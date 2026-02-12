@@ -6,7 +6,11 @@
       "mcp__neon__describe_table_schema",
       "Bash(npx tsc:*)",
       "Bash(npx shadcn@latest add:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(git merge:*)",
+      "Bash(git add:*)",
+      "Bash(git restore:*)",
+      "Bash(git commit:*)"
     ]
   },
   "enabledMcpjsonServers": [
