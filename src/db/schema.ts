@@ -6,8 +6,8 @@ export const userPreferences = pgTable('user_preferences', {
   id: uuid('id').defaultRandom().primaryKey(),
   userId: text('user_id').notNull().unique(),
   defaultUnit: text('default_unit').notNull().default('kg'),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow().$onUpdate(() => new Date()),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });
 
 // Exercise catalog — stores exercise definitions once per user
@@ -15,8 +15,8 @@ export const exercises = pgTable('exercises', {
   id: uuid('id').defaultRandom().primaryKey(),
   userId: text('user_id').notNull(),
   name: text('name').notNull(),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow().$onUpdate(() => new Date()),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });
 
 // Workouts table
@@ -24,10 +24,10 @@ export const workouts = pgTable('workouts', {
   id: uuid('id').defaultRandom().primaryKey(),
   userId: text('user_id').notNull(),
   name: text('name'),
-  startedAt: timestamp('started_at').notNull().defaultNow(),
-  completedAt: timestamp('completed_at'),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow().$onUpdate(() => new Date()),
+  startedAt: timestamp('started_at', { withTimezone: true }).notNull().defaultNow(),
+  completedAt: timestamp('completed_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });
 
 // Junction table — links workouts to exercises from the catalog
@@ -36,7 +36,7 @@ export const workoutExercises = pgTable('workout_exercises', {
   workoutId: uuid('workout_id').notNull().references(() => workouts.id, { onDelete: 'cascade' }),
   exerciseId: uuid('exercise_id').notNull().references(() => exercises.id, { onDelete: 'cascade' }),
   order: integer('order').notNull(),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
 // Sets table — individual sets within a workout exercise
@@ -46,7 +46,7 @@ export const sets = pgTable('sets', {
   setNumber: integer('set_number').notNull(),
   weight: real('weight').notNull(),
   reps: integer('reps').notNull(),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
 // --- Relations for Drizzle query API ---

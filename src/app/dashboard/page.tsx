@@ -1,17 +1,12 @@
-"use client";
-
-import { useState } from "react";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 import { format } from "date-fns";
-import { CalendarIcon, Dumbbell } from "lucide-react";
+import { Dumbbell } from "lucide-react";
 
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { WorkoutTime } from "./workout-time";
+
+import { getWorkoutsForDate } from "@/data/workouts";
+import { DatePicker } from "./date-picker";
 import {
   Card,
   CardContent,
@@ -20,173 +15,26 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-function formatDate(date: Date): string {
-  const day = date.getDate();
-  const suffix =
-    day % 10 === 1 && day !== 11
-      ? "st"
-      : day % 10 === 2 && day !== 12
-        ? "nd"
-        : day % 10 === 3 && day !== 13
-          ? "rd"
-          : "th";
-  return `${day}${suffix} ${format(date, "MMM yyyy")}`;
-}
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ date?: string; utcOffset?: string }>;
+}) {
+  const { userId } = await auth();
+  if (!userId) {
+    redirect("/");
+  }
 
-type Set = {
-  setNumber: number;
-  weight: number;
-  reps: number;
-};
+  const { date, utcOffset } = await searchParams;
+  const offsetMinutes = utcOffset ? parseInt(utcOffset, 10) : 0;
+  const selectedDate = date ? new Date(date + "T00:00:00") : new Date();
+  const dateStr = date ?? format(selectedDate, "yyyy-MM-dd");
 
-type Exercise = {
-  name: string;
-  sets: Set[];
-};
-
-type Workout = {
-  id: string;
-  name: string;
-  startedAt: Date;
-  completedAt: Date | null;
-  exercises: Exercise[];
-};
-
-// Mock data keyed by date string (YYYY-MM-DD)
-const mockWorkouts: Record<string, Workout[]> = {
-  "2026-02-12": [
-    {
-      id: "1",
-      name: "Upper Body Push",
-      startedAt: new Date("2026-02-12T09:00:00"),
-      completedAt: new Date("2026-02-12T10:15:00"),
-      exercises: [
-        {
-          name: "Bench Press",
-          sets: [
-            { setNumber: 1, weight: 80, reps: 8 },
-            { setNumber: 2, weight: 85, reps: 6 },
-            { setNumber: 3, weight: 85, reps: 5 },
-          ],
-        },
-        {
-          name: "Overhead Press",
-          sets: [
-            { setNumber: 1, weight: 50, reps: 8 },
-            { setNumber: 2, weight: 50, reps: 7 },
-            { setNumber: 3, weight: 50, reps: 6 },
-          ],
-        },
-        {
-          name: "Incline Dumbbell Press",
-          sets: [
-            { setNumber: 1, weight: 30, reps: 10 },
-            { setNumber: 2, weight: 30, reps: 9 },
-            { setNumber: 3, weight: 32, reps: 8 },
-          ],
-        },
-      ],
-    },
-  ],
-  "2026-02-10": [
-    {
-      id: "2",
-      name: "Lower Body",
-      startedAt: new Date("2026-02-10T07:30:00"),
-      completedAt: new Date("2026-02-10T08:45:00"),
-      exercises: [
-        {
-          name: "Squat",
-          sets: [
-            { setNumber: 1, weight: 100, reps: 5 },
-            { setNumber: 2, weight: 110, reps: 5 },
-            { setNumber: 3, weight: 120, reps: 3 },
-          ],
-        },
-        {
-          name: "Romanian Deadlift",
-          sets: [
-            { setNumber: 1, weight: 80, reps: 10 },
-            { setNumber: 2, weight: 85, reps: 8 },
-            { setNumber: 3, weight: 85, reps: 8 },
-          ],
-        },
-      ],
-    },
-  ],
-  "2026-02-08": [
-    {
-      id: "3",
-      name: "Upper Body Pull",
-      startedAt: new Date("2026-02-08T10:00:00"),
-      completedAt: null,
-      exercises: [
-        {
-          name: "Pull-ups",
-          sets: [
-            { setNumber: 1, weight: 0, reps: 10 },
-            { setNumber: 2, weight: 0, reps: 8 },
-            { setNumber: 3, weight: 0, reps: 7 },
-          ],
-        },
-        {
-          name: "Barbell Row",
-          sets: [
-            { setNumber: 1, weight: 70, reps: 8 },
-            { setNumber: 2, weight: 75, reps: 6 },
-            { setNumber: 3, weight: 75, reps: 6 },
-          ],
-        },
-      ],
-    },
-  ],
-};
-
-function getWorkoutsForDate(date: Date): Workout[] {
-  const key = format(date, "yyyy-MM-dd");
-  return mockWorkouts[key] ?? [];
-}
-
-export default function DashboardPage() {
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [open, setOpen] = useState(false);
-
-  const workouts = getWorkoutsForDate(selectedDate);
+  const workouts = await getWorkoutsForDate(userId, dateStr, offsetMinutes);
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
-      <div className="mb-8 flex items-center justify-between">
-        <h2 className="text-2xl font-bold tracking-tight">
-          {formatDate(selectedDate)}
-        </h2>
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                "w-[200px] justify-start text-left font-normal",
-                !selectedDate && "text-muted-foreground"
-              )}
-            >
-              <CalendarIcon className="mr-2 size-4" />
-              {formatDate(selectedDate)}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="end">
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={(date) => {
-                if (date) {
-                  setSelectedDate(date);
-                  setOpen(false);
-                }
-              }}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
-      </div>
+      <DatePicker dateStr={dateStr} />
 
       {workouts.length === 0 ? (
         <Card>
@@ -206,22 +54,27 @@ export default function DashboardPage() {
             <Card key={workout.id}>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">{workout.name}</CardTitle>
-                  <Badge variant={workout.completedAt ? "default" : "secondary"}>
+                  <CardTitle className="text-lg">
+                    {workout.name ?? "Workout"}
+                  </CardTitle>
+                  <Badge
+                    variant={workout.completedAt ? "default" : "secondary"}
+                  >
                     {workout.completedAt ? "Completed" : "In Progress"}
                   </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {format(workout.startedAt, "h:mm a")}
-                  {workout.completedAt &&
-                    ` — ${format(workout.completedAt, "h:mm a")}`}
+                  <WorkoutTime
+                    startedAt={workout.startedAt.toISOString()}
+                    completedAt={workout.completedAt?.toISOString() ?? null}
+                  />
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
-                {workout.exercises.map((exercise) => (
-                  <div key={exercise.name}>
+                {workout.workoutExercises.map((we) => (
+                  <div key={we.id}>
                     <h4 className="mb-2 text-sm font-semibold">
-                      {exercise.name}
+                      {we.exercise.name}
                     </h4>
                     <div className="rounded-md border">
                       <table className="w-full text-sm">
@@ -239,9 +92,9 @@ export default function DashboardPage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {exercise.sets.map((set) => (
+                          {we.sets.map((set) => (
                             <tr
-                              key={set.setNumber}
+                              key={set.id}
                               className="border-b last:border-0"
                             >
                               <td className="px-3 py-1.5">{set.setNumber}</td>
