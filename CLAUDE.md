@@ -9,6 +9,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Current docs:
 - `docs/ui.md` - UI design and component guidelines
 - `docs/data-fetching.md` - Data fetching rules and patterns
+- `docs/data-mutations.md` - Data mutation rules (server actions, Zod validation)
+- `docs/auth.md` - Authentication standards (Clerk)
 
 ## Build & Development Commands
 
