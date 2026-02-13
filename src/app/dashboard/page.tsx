@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { format } from "date-fns";
-import { Dumbbell, Plus } from "lucide-react";
+import { Dumbbell, Pencil, Plus } from "lucide-react";
 
 import { WorkoutTime } from "./workout-time";
 
@@ -66,11 +66,18 @@ export default async function DashboardPage({
                   <CardTitle className="text-lg">
                     {workout.name ?? "Workout"}
                   </CardTitle>
-                  <Badge
-                    variant={workout.completedAt ? "default" : "secondary"}
-                  >
-                    {workout.completedAt ? "Completed" : "In Progress"}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant={workout.completedAt ? "default" : "secondary"}
+                    >
+                      {workout.completedAt ? "Completed" : "In Progress"}
+                    </Badge>
+                    <Button asChild variant="ghost" size="icon" className="size-8">
+                      <Link href={`/dashboard/workout/${workout.id}`}>
+                        <Pencil className="size-4" />
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
                 <p className="text-sm text-muted-foreground">
                   <WorkoutTime

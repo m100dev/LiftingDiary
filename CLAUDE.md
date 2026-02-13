@@ -11,6 +11,8 @@ Current docs:
 - `docs/data-fetching.md` - Data fetching rules and patterns
 - `docs/data-mutations.md` - Data mutation rules (server actions, Zod validation)
 - `docs/auth.md` - Authentication standards (Clerk)
+- `docs/routing.md` - Routing standards and route protection
+- `docs/server-components.md` - Server Component standards (async params/searchParams)
 
 ## Build & Development Commands
 

@@ -21,8 +21,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { createWorkoutAction } from "./actions";
-
 function formatDate(date: Date): string {
   const day = date.getDate();
   const suffix =
@@ -44,23 +42,67 @@ type ExerciseEntry = {
   sets: SetEntry[];
 };
 
+export type WorkoutData = {
+  id: string;
+  name: string | null;
+  startedAt: string;
+  exercises: Array<{
+    exerciseId: string;
+    exerciseName: string;
+    sets: Array<{ weight: number; reps: number }>;
+  }>;
+};
+
 export function WorkoutForm({
   existingExercises,
   initialDate,
+  mode = "create",
+  workoutId,
+  initialData,
+  onSubmitAction,
 }: {
   existingExercises: Array<{ id: string; name: string }>;
   initialDate?: string;
+  mode?: "create" | "edit";
+  workoutId?: string;
+  initialData?: WorkoutData;
+  onSubmitAction: (params: {
+    workoutId?: string;
+    name?: string;
+    startedAt: string;
+    exercises: Array<{
+      exerciseId?: string;
+      exerciseName?: string;
+      sets: Array<{ weight: number; reps: number }>;
+    }>;
+  }) => Promise<void>;
 }) {
   const router = useRouter();
-  const [name, setName] = useState("");
-  const [date, setDate] = useState<Date>(
-    initialDate ? new Date(initialDate + "T00:00:00") : new Date()
-  );
-  const [time, setTime] = useState(() => format(new Date(), "HH:mm"));
+  const [name, setName] = useState(initialData?.name ?? "");
+  const [date, setDate] = useState<Date>(() => {
+    if (initialData?.startedAt) return new Date(initialData.startedAt);
+    if (initialDate) return new Date(initialDate + "T00:00:00");
+    return new Date();
+  });
+  const [time, setTime] = useState(() => {
+    if (initialData?.startedAt)
+      return format(new Date(initialData.startedAt), "HH:mm");
+    return format(new Date(), "HH:mm");
+  });
   const [calendarOpen, setCalendarOpen] = useState(false);
-  const [exercises, setExercises] = useState<ExerciseEntry[]>([
-    { exerciseName: "", sets: [{ weight: "", reps: "" }] },
-  ]);
+  const [exercises, setExercises] = useState<ExerciseEntry[]>(() => {
+    if (initialData?.exercises.length) {
+      return initialData.exercises.map((ex) => ({
+        exerciseId: ex.exerciseId,
+        exerciseName: ex.exerciseName,
+        sets: ex.sets.map((s) => ({
+          weight: String(s.weight),
+          reps: String(s.reps),
+        })),
+      }));
+    }
+    return [{ exerciseName: "", sets: [{ weight: "", reps: "" }] }];
+  });
   const [submitting, setSubmitting] = useState(false);
 
   function addExercise() {
@@ -124,7 +166,8 @@ export function WorkoutForm({
       const startedAt = new Date(date);
       startedAt.setHours(hours, minutes, 0, 0);
 
-      await createWorkoutAction({
+      await onSubmitAction({
+        workoutId,
         name: name || undefined,
         startedAt: startedAt.toISOString(),
         exercises: exercises.map((ex) => ({
@@ -343,7 +386,13 @@ export function WorkoutForm({
           Cancel
         </Button>
         <Button type="submit" className="flex-1" disabled={submitting}>
-          {submitting ? "Creating..." : "Create Workout"}
+          {submitting
+            ? mode === "edit"
+              ? "Saving..."
+              : "Creating..."
+            : mode === "edit"
+              ? "Save Changes"
+              : "Create Workout"}
         </Button>
       </div>
     </form>

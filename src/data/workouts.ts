@@ -86,3 +86,90 @@ export async function createWorkout(
 
   return workout;
 }
+
+export async function getWorkoutById(userId: string, workoutId: string) {
+  return db.query.workouts.findFirst({
+    where: and(eq(workouts.id, workoutId), eq(workouts.userId, userId)),
+    with: {
+      workoutExercises: {
+        orderBy: (we, { asc }) => [asc(we.order)],
+        with: {
+          exercise: true,
+          sets: {
+            orderBy: (s, { asc }) => [asc(s.setNumber)],
+          },
+        },
+      },
+    },
+  });
+}
+
+export async function updateWorkout(
+  userId: string,
+  workoutId: string,
+  data: {
+    name?: string;
+    startedAt?: string;
+    exercises: Array<{
+      exerciseId?: string;
+      exerciseName?: string;
+      sets: Array<{ weight: number; reps: number }>;
+    }>;
+  }
+) {
+  await db
+    .update(workouts)
+    .set({
+      name: data.name || null,
+      startedAt: data.startedAt ? new Date(data.startedAt) : undefined,
+    })
+    .where(and(eq(workouts.id, workoutId), eq(workouts.userId, userId)));
+
+  // Delete all existing exercises/sets (cascade handles sets)
+  await db
+    .delete(workoutExercises)
+    .where(eq(workoutExercises.workoutId, workoutId));
+
+  // Recreate exercises and sets
+  for (let i = 0; i < data.exercises.length; i++) {
+    const ex = data.exercises[i];
+
+    let exerciseId = ex.exerciseId;
+
+    if (!exerciseId && ex.exerciseName) {
+      const [newExercise] = await db
+        .insert(exercises)
+        .values({ userId, name: ex.exerciseName })
+        .returning();
+      exerciseId = newExercise.id;
+    }
+
+    if (!exerciseId) continue;
+
+    const [workoutExercise] = await db
+      .insert(workoutExercises)
+      .values({
+        workoutId,
+        exerciseId,
+        order: i + 1,
+      })
+      .returning();
+
+    if (ex.sets.length > 0) {
+      await db.insert(sets).values(
+        ex.sets.map((set, j) => ({
+          workoutExerciseId: workoutExercise.id,
+          setNumber: j + 1,
+          weight: set.weight,
+          reps: set.reps,
+        }))
+      );
+    }
+  }
+}
+
+export async function deleteWorkout(userId: string, workoutId: string) {
+  await db
+    .delete(workouts)
+    .where(and(eq(workouts.id, workoutId), eq(workouts.userId, userId)));
+}
