@@ -44,7 +44,7 @@ export default async function EditWorkoutPage({
     <main className="mx-auto max-w-2xl px-4 py-8">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Edit Workout</h1>
-        <DeleteWorkoutButton workoutId={workoutId} />
+        <DeleteWorkoutButton workoutId={workoutId} workoutDate={workout.startedAt} />
       </div>
       <WorkoutForm
         existingExercises={exercises.map((e) => ({ id: e.id, name: e.name }))}
