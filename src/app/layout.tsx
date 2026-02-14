@@ -10,6 +10,7 @@ import {
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Button } from "@/components/ui/button";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -45,14 +46,10 @@ export default function RootLayout({
                 <ThemeToggle />
                 <SignedOut>
                   <SignInButton mode="modal">
-                    <button className="px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                      Sign In
-                    </button>
+                    <Button variant="ghost">Sign In</Button>
                   </SignInButton>
                   <SignUpButton mode="modal">
-                    <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
-                      Sign Up
-                    </button>
+                    <Button>Sign Up</Button>
                   </SignUpButton>
                 </SignedOut>
                 <SignedIn>
