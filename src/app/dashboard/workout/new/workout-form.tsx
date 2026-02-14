@@ -180,7 +180,9 @@ export function WorkoutForm({
         })),
       });
 
-      router.push("/dashboard");
+      const workoutDate = format(date, "yyyy-MM-dd");
+      const offset = date.getTimezoneOffset();
+      router.push(`/dashboard?date=${workoutDate}&utcOffset=${offset}`);
     } catch {
       setSubmitting(false);
     }
@@ -381,7 +383,11 @@ export function WorkoutForm({
           type="button"
           variant="outline"
           className="flex-1"
-          onClick={() => router.push("/dashboard")}
+          onClick={() => {
+            const workoutDate = format(date, "yyyy-MM-dd");
+            const offset = date.getTimezoneOffset();
+            router.push(`/dashboard?date=${workoutDate}&utcOffset=${offset}`);
+          }}
         >
           Cancel
         </Button>

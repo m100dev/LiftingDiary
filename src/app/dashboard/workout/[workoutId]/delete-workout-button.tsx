@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { format } from "date-fns";
 import { Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { deleteWorkoutAction } from "./actions";
 
-export function DeleteWorkoutButton({ workoutId }: { workoutId: string }) {
+export function DeleteWorkoutButton({ workoutId, workoutDate }: { workoutId: string; workoutDate: Date }) {
   const router = useRouter();
   const [deleting, setDeleting] = useState(false);
 
@@ -17,7 +18,9 @@ export function DeleteWorkoutButton({ workoutId }: { workoutId: string }) {
     setDeleting(true);
     try {
       await deleteWorkoutAction({ workoutId });
-      router.push("/dashboard");
+      const dateStr = format(workoutDate, "yyyy-MM-dd");
+      const offset = workoutDate.getTimezoneOffset();
+      router.push(`/dashboard?date=${dateStr}&utcOffset=${offset}`);
     } catch {
       setDeleting(false);
     }
